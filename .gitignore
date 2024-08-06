@@ -8,6 +8,7 @@ venv
 *.jpg
 *.jpeg
 *.pth
+*.npy
 
 vessel_sementation
 

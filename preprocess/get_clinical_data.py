@@ -59,6 +59,7 @@ def main():
         
         def get_kf_dict(mask, patient_dir, primary_only_match=False):
             key_frame_identifiers = get_frame_identifiers(mask, primary_only=primary_only_match)           
+            key_frame_id = int(mask.split('_')[3])
             key_frame_path = ""
 
             for root, dirs, files in os.walk(patient_dir):
@@ -78,6 +79,7 @@ def main():
                     "id": exam_id,
                     "path": exam_path,
                     "key_frame": {
+                        "id": key_frame_id,
                         "identifiers": key_frame_identifiers,
                         "path": key_frame_path,
                         "mask": mask_path,
@@ -90,12 +92,7 @@ def main():
         exams = []
         masks_not_found = []
 
-        max_kf_id = (0, "")
-
         for mask in tqdm(mask_files):
-            kf_id = int(mask.split('_')[3])
-            if kf_id>50:
-                print(mask)
             #check if there i a c_mask duplicate -> better
             dot_index = mask.rfind('.')
             if mask[dot_index-1]=="a":
@@ -123,7 +120,6 @@ def main():
             for mask in masks_not_found:
                 file.write(f"{mask}\n")
 
-        print(max_kf_id)
         return exams
     
     patient_data = get_patient_data(patients_excel_path)
