@@ -1,26 +1,41 @@
-data_json: "/home/guests/mas/angiograms/clinical_data.json"
 
 training:
-  checkpoints_dir: "/home/guests/mas/angiograms/clinical_data.json"
+  data_json: "/home/guests/mas/angiograms/clinical_data.json"
+  checkpoints_dir: "/home/guests/mas/angiograms/ifr_prediction/checkpoint"
+  performance_dir: "/home/guests/mas/angiograms/ifr_prediction/performance"
+  charts_dir: "/home/guests/mas/angiograms/ifr_prediction/charts"
+
   epochs: 50
-  batch_size: 50
-  log_interval: 10
+  batch_size: 10
+  test_size: 0.2
+  num_workers: 4
+  log_interval: 10 #num of batches
 
   frame:
     window: 25
     step: 2
+    n_mask: 1
 
   crnn:
+    lr: 0.0001
     cnn:
+      in_dim: 214
       fc1_dim:  1024
       fc2_dim: 768
-      embed_dim: 224  #encoder output
+      out_dim: 512  #latent dim extracted by 2D CNN
       dropout_p: 0.0
     rnn:
       #LSTM
-      hidden_size:
-      hidden_layers:
+      hidden_size: 512  #nodes
+      hidden_layers: 3
       #Linear
       fc1_dim: 256
       dropout_p: 0.0
+
+  cnn3d:
+    img_x: 256
+    img_y: 342
+    dropout_p: 0.0
+    fc1_dim:  256
+    fc2_dim: 256
 
