@@ -1,6 +1,7 @@
 from utils import *
 from models import *
 from dataset import *
+from transforms import *
 
 import os
 import numpy as np
@@ -139,19 +140,22 @@ def main():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config.test_size, random_state=SEED)
 
-    train_set, valid_set = Dataset_CRNN(X_train, y_train, config, augment=True), \
-                        Dataset_CRNN(X_test, y_test, config)
+    transform = get_crnn_transform(config.crnn.cnn.in_dim,config.crnn.cnn.in_dim)
+    aug_transform = get_crnn_augmentation_tranform(config.crnn.cnn.in_dim,config.crnn.cnn.in_dim)
+
+    train_set = Dataset_CRNN(X_train, y_train, config, transform=aug_transform)
+    valid_set = Dataset_CRNN(X_test, y_test, config, transform=transform)
 
     train_loader = data.DataLoader(train_set, **params)
     valid_loader = data.DataLoader(valid_set, **params)
 
     # create model
     cnn_config = config.crnn.cnn
-    cnn_encoder = CNNEncoder(
+    cnn_encoder = ResNetCNNEncoder(
         fc1_dim=cnn_config.fc1_dim, 
         fc2_dim=cnn_config.fc2_dim, 
         drop_p=cnn_config.dropout_p, 
-        out_dim=cnn_config.out_dim
+        out_dim=cnn_config.out_dim,
     ).to(device)
 
     rnn_config = config.crnn.rnn

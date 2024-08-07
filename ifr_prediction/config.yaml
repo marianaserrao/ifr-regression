@@ -22,6 +22,8 @@ training:
     lr: 0.0001
     cnn:
       in_dim: 214
+      img_x: 256
+      img_y: 342
       fc1_dim:  1024
       fc2_dim: 768
       out_dim: 512  #latent dim extracted by 2D CNN

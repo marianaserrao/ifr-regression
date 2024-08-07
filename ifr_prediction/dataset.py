@@ -11,14 +11,14 @@ from tqdm import tqdm
 
 class Dataset_CRNN(data.Dataset):
     "Characterizes a dataset for PyTorch"
-    def __init__(self, exams, labels, config, augment=False):
+    def __init__(self, exams, labels, config, transform=None):
         "Initialization"
         self.labels = labels
         self.exams = exams
         self.config = config.crnn
         self.frame_window = config.frame.window
         self.frame_step = config.frame.step
-        self.augment = augment
+        self.transform = transform
 
     def __len__(self):
         "Denotes the total number of samples"
@@ -51,24 +51,20 @@ class Dataset_CRNN(data.Dataset):
         X = []
         kf_ids=self.get_context_frame_ids(exam)
         key_frame_path = exam["key_frame"]["path"]
-
-        transform = transforms.Compose([transforms.Resize([self.config.cnn.in_dim, self.config.cnn.in_dim]),
-                    transforms.ToTensor(),
-                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
         
         for i in kf_ids:            
             image = Image.open(self.get_frame_path_by_id(key_frame_path, i))
             # image = Image.merge("RGB", (image, image, image))
 
-            if transform is not None:
-                image = transform(image)
+            if self.transform is not None:
+                image = self.transform(image)
 
             X.append(image)
         
         kf_mask = Image.open(exam["key_frame"]["mask"]).convert("L")
         kf_mask = Image.merge("RGB", (kf_mask, kf_mask, kf_mask))
-        if transform is not None:
-            kf_mask = transform(kf_mask)
+        if self.transform is not None:
+            kf_mask = self.transform(kf_mask)
         X.append(kf_mask)
 
         X = torch.stack(X, dim=0)
