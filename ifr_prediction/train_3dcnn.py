@@ -79,12 +79,12 @@ def validation(model, device, optimizer, test_loader, epoch):
     with torch.no_grad():
         for X, y in test_loader:
             # distribute data to device
-            X, y = X.to(device), y.to(device).view(-1, )
+            X, y = X.to(device), y.to(device).view(-1, 1)
 
             output = model(X)
 
             # compute loss
-            loss = F.mse_loss(output, y, reduction='sum')
+            loss = F.mse_loss(output, y)
             test_loss += loss.item()    # sum up batch loss
             y_pred = output
 
@@ -100,12 +100,13 @@ def validation(model, device, optimizer, test_loader, epoch):
     test_score = mean_squared_error(all_y.cpu().data.squeeze().numpy(), all_y_pred.cpu().data.squeeze().numpy())
 
     # show information
-    print('\nTest set ({:d} samples): Average loss: {:.4f}, Accuracy: {:.4f}%\n'.format(len(all_y), test_loss, 100* test_score))
+    print('\nTest set ({:d} samples): Average loss: {:.4f}, MSE: {:.4f}\n'.format(len(all_y), test_loss, test_score))
 
     # save Pytorch models of best record
-    torch.save(model.state_dict(), os.path.join(config.checkpoints_dir, '3dcnn_epoch{}.pth'.format(epoch + 1)))  # save spatial_encoder
-    torch.save(optimizer.state_dict(), os.path.join(config.checkpoints_dir, '3dcnn_optimizer_epoch{}.pth'.format(epoch + 1)))      # save optimizer
-    print("Epoch {} model saved!".format(epoch + 1))
+    if config.save_checkpoints:
+        torch.save(model.state_dict(), os.path.join(config.checkpoints_dir, '3dcnn_epoch{}.pth'.format(epoch + 1)))  # save spatial_encoder
+        torch.save(optimizer.state_dict(), os.path.join(config.checkpoints_dir, '3dcnn_optimizer_epoch{}.pth'.format(epoch + 1)))      # save optimizer
+        print("Epoch {} model saved!".format(epoch + 1))
 
     return test_loss, test_score
 
@@ -151,7 +152,7 @@ def main():
         print("Using", torch.cuda.device_count(), "GPUs!")
         cnn3d = nn.DataParallel(cnn3d)
 
-    optimizer = torch.optim.Adam(cnn3d.parameters(), lr=config.crnn.lr)
+    optimizer = torch.optim.Adam(cnn3d.parameters(), lr=config.cnn3d.lr)
 
     # record training process
     epoch_train_losses = []
@@ -171,10 +172,11 @@ def main():
         epoch_test_scores.append(epoch_test_score)
 
         # save performace files
-        np.save(os.path.join(config.performance_dir,'3dcnn_epoch_training_losses.npy'), np.array(epoch_train_losses))
-        np.save(os.path.join(config.performance_dir,'3dcnn_epoch_training_scores.npy'), np.array(epoch_train_scores))
-        np.save(os.path.join(config.performance_dir,'3dcnn_epoch_test_loss.npy'), np.array(epoch_test_losses))
-        np.save(os.path.join(config.performance_dir,'3dcnn_epoch_test_score.npy'), np.array(epoch_test_scores))
+        if config.save_checkpoints:
+            np.save(os.path.join(config.performance_dir,'3dcnn_epoch_training_losses.npy'), np.array(epoch_train_losses))
+            np.save(os.path.join(config.performance_dir,'3dcnn_epoch_training_scores.npy'), np.array(epoch_train_scores))
+            np.save(os.path.join(config.performance_dir,'3dcnn_epoch_test_loss.npy'), np.array(epoch_test_losses))
+            np.save(os.path.join(config.performance_dir,'3dcnn_epoch_test_score.npy'), np.array(epoch_test_scores))
     
     plot_performance("3DCNN", config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores)
 

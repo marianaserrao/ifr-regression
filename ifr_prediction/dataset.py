@@ -90,7 +90,7 @@ class Dataset_3DCNN(data.Dataset):
         "Initialization"
         self.labels = labels
         self.exams = exams
-        self.config = config.crnn
+        self.config = config.cnn3d
         self.frame_window = config.frame.window
         self.frame_step = config.frame.step
         self.augment = augment
@@ -127,7 +127,7 @@ class Dataset_3DCNN(data.Dataset):
         kf_ids=self.get_context_frame_ids(exam)
         key_frame_path = exam["key_frame"]["path"]
 
-        transform = transforms.Compose([transforms.Resize([self.config.cnn.in_dim, self.config.cnn.in_dim]),
+        transform = transforms.Compose([transforms.Resize([self.config.img_x, self.config.img_y]),
                     transforms.ToTensor(),
                     transforms.Normalize(mean=[0.5], std=[0.5])])
         

@@ -11,10 +11,10 @@ from tqdm import tqdm
 
 ##### RCNN ##############################################################################
 
-class CNNEncoder(nn.Module):
+class ResNetCNNEncoder(nn.Module):
     def __init__(self, fc1_dim=512, fc2_dim=512, drop_p=0.3, out_dim=300):
         """Load the pretrained ResNet-152 and replace top fc layer."""
-        super(CNNEncoder, self).__init__()
+        super(ResNetCNNEncoder, self).__init__()
 
         self.fc1_dim, self.fc2_dim = fc1_dim, fc2_dim
         self.drop_p = drop_p
