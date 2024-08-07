@@ -82,7 +82,7 @@ def train(log_interval, model, device, train_loader, optimizer, epoch):
         # show information
         if (batch_idx + 1) % log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}, MSE: {:.2f}'.format(
-                epoch + 1, N_count, len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader), loss.item(), 100 * step_score))
+                epoch + 1, N_count, len(train_loader.dataset), 100. * (batch_idx + 1) / len(train_loader), loss.item(), step_score))
 
     return losses, scores
 
@@ -118,7 +118,7 @@ def validation(model, device, optimizer, test_loader):
     test_score = mean_squared_error(all_y.cpu().data.squeeze().numpy(), all_y_pred.cpu().data.squeeze().numpy())
 
     # show information
-    print('\nTest set ({:d} samples): Average loss: {:.4f}, MSE: {:.2f}%\n'.format(len(all_y), test_loss, 100* test_score))
+    print('\nTest set ({:d} samples): Average loss: {:.4f}, MSE: {:.2f}\n'.format(len(all_y), test_loss, test_score))
 
     # save Pytorch models of best record
     torch.save(cnn_encoder.state_dict(), os.path.join(save_model_path, 'cnn_encoder_epoch{}.pth'.format(epoch + 1)))  # save spatial_encoder
@@ -220,7 +220,7 @@ plt.plot(np.arange(1, epochs + 1), B[:, -1])  # train accuracy (on epoch end)
 plt.plot(np.arange(1, epochs + 1), D)         #  test accuracy (on epoch end)
 plt.title("training scores")
 plt.xlabel('epochs')
-plt.ylabel('accuracy')
+plt.ylabel('MSE')
 plt.legend(['train', 'test'], loc="upper left")
 title = "./fig_UCF101_ResNetCRNN.png"
 plt.savefig(title, dpi=600)
