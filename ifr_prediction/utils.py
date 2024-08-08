@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import yaml
 import os
+import time
 
 def get_config(file_path):
     """Load a YAML file and return a Box object (dot notation)"""
@@ -31,7 +32,7 @@ def plot_performance(model_name, config, epoch_train_losses, epoch_test_losses, 
     plt.ylabel('MSE')
     plt.legend(['train', 'test'], loc="upper left")
 
-    path = os.path.join(config.charts_dir, f"{model_name}.png")
+    path = os.path.join(config.charts_dir, f"{model_name}_{time.time()}.png")
     plt.savefig(path, dpi=600)
     plt.close(fig)
     # plt.show()

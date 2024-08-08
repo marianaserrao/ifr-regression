@@ -82,14 +82,14 @@ class Dataset_CRNN(data.Dataset):
     
 class Dataset_3DCNN(data.Dataset):
     "Characterizes a dataset for PyTorch"
-    def __init__(self, exams, labels, config, augment=False):
+    def __init__(self, exams, labels, config, transform=None):
         "Initialization"
         self.labels = labels
         self.exams = exams
         self.config = config.cnn3d
         self.frame_window = config.frame.window
         self.frame_step = config.frame.step
-        self.augment = augment
+        self.transform = transform
 
     def __len__(self):
         "Denotes the total number of samples"
@@ -122,24 +122,20 @@ class Dataset_3DCNN(data.Dataset):
         X = []
         kf_ids=self.get_context_frame_ids(exam)
         key_frame_path = exam["key_frame"]["path"]
-
-        transform = transforms.Compose([transforms.Resize([self.config.img_x, self.config.img_y]),
-                    transforms.ToTensor(),
-                    transforms.Normalize(mean=[0.5], std=[0.5])])
         
         for i in kf_ids:            
             image = Image.open(self.get_frame_path_by_id(key_frame_path, i)).convert("L")
             # image = Image.merge("RGB", (image, image, image))
 
-            if transform is not None:
-                image = transform(image)
+            if self.transform is not None:
+                image = self.transform(image)
 
             X.append(image.squeeze_(0))
         
         kf_mask = Image.open(exam["key_frame"]["mask"]).convert("L")
         # kf_mask = Image.merge("RGB", (kf_mask, kf_mask, kf_mask))
-        if transform is not None:
-            kf_mask = transform(kf_mask)
+        if self.transform is not None:
+            kf_mask = self.transform(kf_mask)
         X.append(kf_mask.squeeze_(0))
 
         X = torch.stack(X, dim=0)
@@ -153,4 +149,37 @@ class Dataset_3DCNN(data.Dataset):
         # Load data
         X = self.read_images(exam).unsqueeze_(0)     # (input) spatial images
         y = torch.FloatTensor([self.labels[index]])                  # (labels) LongTensor are for int64 instead of FloatTensor
+        return X, y
+
+class Dataset_2DCNN(data.Dataset):
+    "Characterizes a dataset for PyTorch"
+    def __init__(self, exams, labels, config, transform=None):
+        "Initialization"
+        self.labels = labels
+        self.exams = exams
+        self.config = config.cnn2d
+        self.transform = transform
+
+    def __len__(self):
+        "Denotes the total number of samples"
+        return len(self.exams)
+
+    def read_image(self, exam):
+        
+        kf_mask = Image.open(exam["key_frame"]["mask"]).convert("L")
+
+        if self.transform is not None:
+            kf_mask = self.transform(kf_mask)
+
+        X = kf_mask
+        return X
+
+    def __getitem__(self, index):
+        "Generates one sample of data"
+        # Select sample
+        exam = self.exams[index]
+
+        # Load data
+        X = self.read_image(exam)
+        y = torch.FloatTensor([self.labels[index]])
         return X, y

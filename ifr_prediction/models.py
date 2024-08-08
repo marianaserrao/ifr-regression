@@ -9,13 +9,21 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 from tqdm import tqdm
 
-##### RCNN ##############################################################################
+#TODO: refactor cnn out size calc
 def conv2D_output_size(img_size, padding, kernel_size, stride):
     # compute output shape of conv2D
     outshape = (np.floor((img_size[0] + 2 * padding[0] - (kernel_size[0] - 1) - 1) / stride[0] + 1).astype(int),
                 np.floor((img_size[1] + 2 * padding[1] - (kernel_size[1] - 1) - 1) / stride[1] + 1).astype(int))
     return outshape
 
+def conv3D_output_size(img_size, padding, kernel_size, stride):
+    # compute output shape of conv3D
+    outshape = (np.floor((img_size[0] + 2 * padding[0] - (kernel_size[0] - 1) - 1) / stride[0] + 1).astype(int),
+                np.floor((img_size[1] + 2 * padding[1] - (kernel_size[1] - 1) - 1) / stride[1] + 1).astype(int),
+                np.floor((img_size[2] + 2 * padding[2] - (kernel_size[2] - 1) - 1) / stride[2] + 1).astype(int))
+    return outshape
+
+##### RCNN ##############################################################################
 
 # 2D CNN encoder train from scratch (no transfer learning)
 class CustomCNNEncoder(nn.Module):
@@ -178,12 +186,6 @@ class RNNDecoder(nn.Module):
         return x
 
 ##### 3D CNN #######################################################
-def conv3D_output_size(img_size, padding, kernel_size, stride):
-    # compute output shape of conv3D
-    outshape = (np.floor((img_size[0] + 2 * padding[0] - (kernel_size[0] - 1) - 1) / stride[0] + 1).astype(int),
-                np.floor((img_size[1] + 2 * padding[1] - (kernel_size[1] - 1) - 1) / stride[1] + 1).astype(int),
-                np.floor((img_size[2] + 2 * padding[2] - (kernel_size[2] - 1) - 1) / stride[2] + 1).astype(int))
-    return outshape
 
 class CNN3D(nn.Module):
     def __init__(self, t_dim=120, img_x=90, img_y=120, drop_p=0.2, fc_hidden1=256, fc_hidden2=128, num_classes=1):
@@ -223,6 +225,60 @@ class CNN3D(nn.Module):
     def forward(self, x_3d):
         # Conv 1
         x = self.conv1(x_3d)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.drop(x)
+        # Conv 2
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.drop(x)
+        # FC 1 and 2
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.dropout(x, p=self.drop_p, training=self.training)
+        x = self.fc3(x)
+
+        return x
+
+##### 2D CNN ############################################################################
+class CNN2D(nn.Module):
+    def __init__(self, img_x=90, img_y=120, drop_p=0.2, fc_hidden1=256, fc_hidden2=128, num_classes=1):
+        super(CNN2D, self).__init__()
+
+        # set image dimension
+        self.img_x = img_x
+        self.img_y = img_y
+        # fully connected layer hidden nodes
+        self.fc_hidden1, self.fc_hidden2 = fc_hidden1, fc_hidden2
+        self.drop_p = drop_p
+        self.num_classes = num_classes
+        self.ch1, self.ch2 = 32, 48
+        self.k1, self.k2 = (5, 5), (3, 3)  # 2d kernel size
+        self.s1, self.s2 = (2, 2), (2, 2)  # 2d strides
+        self.pd1, self.pd2 = (0, 0), (0, 0)  # 2d padding
+
+        # compute conv1 & conv2 output shape
+        self.conv1_outshape = conv2D_output_size((self.img_x, self.img_y), self.pd1, self.k1, self.s1)
+        self.conv2_outshape = conv2D_output_size(self.conv1_outshape, self.pd2, self.k2, self.s2)
+
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=self.ch1, kernel_size=self.k1, stride=self.s1,
+                               padding=self.pd1)
+        self.bn1 = nn.BatchNorm2d(self.ch1)
+        self.conv2 = nn.Conv2d(in_channels=self.ch1, out_channels=self.ch2, kernel_size=self.k2, stride=self.s2,
+                               padding=self.pd2)
+        self.bn2 = nn.BatchNorm2d(self.ch2)
+        self.relu = nn.ReLU(inplace=True)
+        self.drop = nn.Dropout2d(self.drop_p)
+        self.pool = nn.MaxPool2d(2)
+        self.fc1 = nn.Linear(self.ch2 * self.conv2_outshape[0] * self.conv2_outshape[1], self.fc_hidden1)  # fully connected hidden layer
+        self.fc2 = nn.Linear(self.fc_hidden1, self.fc_hidden2)
+        self.fc3 = nn.Linear(self.fc_hidden2, self.num_classes)  # fully connected layer, output = regression value
+
+    def forward(self, x_2d):
+        # Conv 1
+        x = self.conv1(x_2d)
         x = self.bn1(x)
         x = self.relu(x)
         x = self.drop(x)

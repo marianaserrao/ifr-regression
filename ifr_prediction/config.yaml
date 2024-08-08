@@ -1,13 +1,13 @@
 
 training:
+  save_checkpoints: False
+
   data_json: "/home/guests/mas/angiograms/clinical_data.json"
   checkpoints_dir: "/home/guests/mas/angiograms/ifr_prediction/checkpoint"
   performance_dir: "/home/guests/mas/angiograms/ifr_prediction/performance"
   charts_dir: "/home/guests/mas/angiograms/ifr_prediction/charts"
 
-  save_checkpoints: False
-
-  epochs: 50
+  epochs: 30
   batch_size: 10
   test_size: 0.2
   num_workers: 4
@@ -37,6 +37,14 @@ training:
       dropout_p: 0.0
 
   cnn3d:
+    lr: 0.0001
+    img_x: 256
+    img_y: 342
+    dropout_p: 0.0
+    fc1_dim:  256
+    fc2_dim: 256
+
+  cnn2d:
     lr: 0.0001
     img_x: 256
     img_y: 342
