@@ -1,6 +1,7 @@
 test*
 other
 venv
+charts
 
 *.log
 *.xlsx
