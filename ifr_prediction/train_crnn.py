@@ -86,7 +86,7 @@ def main():
                     list(cnn_encoder.fc2.parameters()) + list(cnn_encoder.bn2.parameters()) + \
                     list(cnn_encoder.fc3.parameters()) + list(rnn_decoder.parameters())
 
-    optimizer = torch.optim.Adam(crnn_params, lr=config.crnn.lr)
+    optimizer = torch.optim.Adam(crnn_params, lr=config.crnn.lr, weight_decay=config.crnn.weight_decay)
 
     # record training process
     epoch_train_losses = []

@@ -107,8 +107,6 @@ class CustomCNNEncoder(nn.Module):
 
         return cnn_embed_seq
 
-
-
 class ResNetCNNEncoder(nn.Module):
     def __init__(self, fc1_dim=512, fc2_dim=512, drop_p=0.3, out_dim=300):
         """Load the pretrained ResNet-152 and replace top fc layer."""
@@ -170,8 +168,7 @@ class RNNDecoder(nn.Module):
         self.fc1 = nn.Linear(self.hidden_size, self.fc1_dim)
         self.fc2 = nn.Linear(self.fc1_dim, self.num_classes)
 
-    def forward(self, x_RNN):
-        
+    def forward(self, x_RNN):        
         self.LSTM.flatten_parameters()
         RNN_out, (h_n, h_c) = self.LSTM(x_RNN, None)  
         """ h_n shape (n_layers, batch, hidden_size), h_c shape (n_layers, batch, hidden_size) """ 

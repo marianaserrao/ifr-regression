@@ -3,11 +3,30 @@ import numpy as np
 from PIL import Image
 from torch.utils import data
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision.models as models
-import torchvision.transforms as transforms
-from tqdm import tqdm
+
+def get_context_frame_ids(exam, config):
+    kf_id = exam["key_frame"]["id"]
+    frame_ids = np.arange(max(1, kf_id-config.frame.window+1), kf_id+1, config.frame.step)
+
+    total_frames = config.frame.window//config.frame.step
+    if len(frame_ids) < total_frames:
+        difference = total_frames - len(frame_ids)
+        half_diff = difference // 2
+        
+        # Create the padding arrays
+        padding_i = np.ones(half_diff, dtype=int)
+        padding_f = np.full(difference - half_diff, frame_ids[-1], dtype=int)
+        
+        # Concatenate the numbers with the padding
+        frame_ids = np.concatenate((padding_i, frame_ids, padding_f))
+    return frame_ids
+
+def get_frame_path_by_id(key_frame_path, id):
+    dirs = "/".join(key_frame_path.split('/')[:-1])
+    kf_name = key_frame_path.split('/')[-1]
+    frame_name = '_'.join(kf_name.split('_')[:3] + [str(id)] + kf_name.split('_')[4:])
+    path= os.path.join(dirs, frame_name)
+    return path
 
 class Dataset_CRNN(data.Dataset):
     "Characterizes a dataset for PyTorch"
@@ -15,45 +34,20 @@ class Dataset_CRNN(data.Dataset):
         "Initialization"
         self.labels = labels
         self.exams = exams
-        self.config = config.crnn
-        self.frame_window = config.frame.window
-        self.frame_step = config.frame.step
+        self.config = config
         self.transform = transform
 
     def __len__(self):
         "Denotes the total number of samples"
         return len(self.exams)
-    
-    def get_context_frame_ids(self, exam):
-        kf_id = exam["key_frame"]["id"]
-        frame_ids = np.arange(max(1, kf_id-self.frame_window*self.frame_step), kf_id, self.frame_step)
-
-        if len(frame_ids) < self.frame_window:
-            difference = self.frame_window - len(frame_ids)
-            half_diff = difference // 2
-            
-            # Create the padding arrays
-            padding_i = np.ones(half_diff, dtype=int)
-            padding_f = np.full(difference - half_diff, frame_ids[-1], dtype=int)
-            
-            # Concatenate the numbers with the padding
-            frame_ids = np.concatenate((padding_i, frame_ids, padding_f))
-        return frame_ids
-
-    def get_frame_path_by_id(self, key_frame_path, id):
-        dirs = "/".join(key_frame_path.split('/')[:-1])
-        kf_name = key_frame_path.split('/')[-1]
-        frame_name = '_'.join(kf_name.split('_')[:3] + [str(id)] + kf_name.split('_')[4:])
-        path= os.path.join(dirs, frame_name)
-        return path
 
     def read_images(self, exam):
         X = []
-        kf_ids=self.get_context_frame_ids(exam)
+        kf_ids=get_context_frame_ids(exam, self.config)
         key_frame_path = exam["key_frame"]["path"]
         
         for i in kf_ids:            
-            image = Image.open(self.get_frame_path_by_id(key_frame_path, i))
+            image = Image.open(get_frame_path_by_id(key_frame_path, i))
             # image = Image.merge("RGB", (image, image, image))
 
             if self.transform is not None:
@@ -65,7 +59,7 @@ class Dataset_CRNN(data.Dataset):
         kf_mask = Image.merge("RGB", (kf_mask, kf_mask, kf_mask))
         if self.transform is not None:
             kf_mask = self.transform(kf_mask)
-        X.append(kf_mask)
+        X.extend([kf_mask] * self.config.frame.n_mask)
 
         X = torch.stack(X, dim=0)
         return X
@@ -86,45 +80,20 @@ class Dataset_3DCNN(data.Dataset):
         "Initialization"
         self.labels = labels
         self.exams = exams
-        self.config = config.cnn3d
-        self.frame_window = config.frame.window
-        self.frame_step = config.frame.step
+        self.config = config
         self.transform = transform
 
     def __len__(self):
         "Denotes the total number of samples"
         return len(self.exams)
-    
-    def get_context_frame_ids(self, exam):
-        kf_id = exam["key_frame"]["id"]
-        frame_ids = np.arange(max(1, kf_id-self.frame_window*self.frame_step), kf_id, self.frame_step)
-
-        if len(frame_ids) < self.frame_window:
-            difference = self.frame_window - len(frame_ids)
-            half_diff = difference // 2
-            
-            # Create the padding arrays
-            padding_i = np.ones(half_diff, dtype=int)
-            padding_f = np.full(difference - half_diff, frame_ids[-1], dtype=int)
-            
-            # Concatenate the numbers with the padding
-            frame_ids = np.concatenate((padding_i, frame_ids, padding_f))
-        return frame_ids
-
-    def get_frame_path_by_id(self, key_frame_path, id):
-        dirs = "/".join(key_frame_path.split('/')[:-1])
-        kf_name = key_frame_path.split('/')[-1]
-        frame_name = '_'.join(kf_name.split('_')[:3] + [str(id)] + kf_name.split('_')[4:])
-        path= os.path.join(dirs, frame_name)
-        return path
 
     def read_images(self, exam):
         X = []
-        kf_ids=self.get_context_frame_ids(exam)
+        kf_ids=get_context_frame_ids(exam, self.config)
         key_frame_path = exam["key_frame"]["path"]
         
         for i in kf_ids:            
-            image = Image.open(self.get_frame_path_by_id(key_frame_path, i)).convert("L")
+            image = Image.open(get_frame_path_by_id(key_frame_path, i)).convert("L")
             # image = Image.merge("RGB", (image, image, image))
 
             if self.transform is not None:
@@ -136,7 +105,7 @@ class Dataset_3DCNN(data.Dataset):
         # kf_mask = Image.merge("RGB", (kf_mask, kf_mask, kf_mask))
         if self.transform is not None:
             kf_mask = self.transform(kf_mask)
-        X.append(kf_mask.squeeze_(0))
+        X.extend([kf_mask.squeeze_(0)] * self.config.frame.n_mask)
 
         X = torch.stack(X, dim=0)
         return X
@@ -157,7 +126,7 @@ class Dataset_2DCNN(data.Dataset):
         "Initialization"
         self.labels = labels
         self.exams = exams
-        self.config = config.cnn2d
+        self.config = config
         self.transform = transform
 
     def __len__(self):

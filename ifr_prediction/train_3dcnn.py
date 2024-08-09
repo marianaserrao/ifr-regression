@@ -65,7 +65,7 @@ def main():
         print("Using", torch.cuda.device_count(), "GPUs!")
         cnn3d = nn.DataParallel(cnn3d)
 
-    optimizer = torch.optim.Adam(cnn3d.parameters(), lr=config.cnn3d.lr)
+    optimizer = torch.optim.Adam(cnn3d.parameters(), lr=config.cnn3d.lr, weight_decay=config.cnn3d.wight_decay)
 
     # record training process
     epoch_train_losses = []

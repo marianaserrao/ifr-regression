@@ -14,9 +14,12 @@ def get_config(file_path):
 def plot_performance(model_name, config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores):
     fig = plt.figure(figsize=(10, 4))
 
+    epoch_train_scores, epoch_train_losses = np.array(epoch_train_scores)[:, -1], np.array(epoch_train_losses)[:, -1]
+    epoch_test_scores, epoch_test_losses = np.array(epoch_test_scores), np.array(epoch_test_losses)
+
     # plot losses
     plt.subplot(121)
-    plt.plot(np.arange(1, config.epochs + 1), np.array(epoch_train_losses)[:, -1])  # train loss (on epoch end)
+    plt.plot(np.arange(1, config.epochs + 1), epoch_train_losses)  # train loss (on epoch end)
     plt.plot(np.arange(1, config.epochs + 1), epoch_test_losses)         #  test loss (on epoch end)
     plt.title("model loss")
     plt.xlabel('epochs')
@@ -25,14 +28,24 @@ def plot_performance(model_name, config, epoch_train_losses, epoch_test_losses, 
 
     # plot mse
     plt.subplot(122)
-    plt.plot(np.arange(1, config.epochs + 1), np.array(epoch_train_scores)[:, -1])  # train accuracy (on epoch end)
+    plt.plot(np.arange(1, config.epochs + 1), epoch_train_scores)  # train accuracy (on epoch end)
     plt.plot(np.arange(1, config.epochs + 1), epoch_test_scores)         #  test accuracy (on epoch end)
     plt.title("training scores")
     plt.xlabel('epochs')
     plt.ylabel('MSE')
     plt.legend(['train', 'test'], loc="upper left")
 
-    path = os.path.join(config.charts_dir, f"{model_name}_{time.time()}.png")
+    path = os.path.join(config.charts_dir, f"{model_name}_{int(time.time())}.png")
     plt.savefig(path, dpi=600)
     plt.close(fig)
-    # plt.show()
+
+    report = 'Best scores: \n Train set -> Loss: {:.4f}, MSE: {:.4f}, Epoch: {} \n  Test set -> Loss: {:.4f}, MSE: {:.4f}, Epoch: {} \n Config: \n{}'.format(
+        np.min(epoch_train_losses), np.min(epoch_train_scores), np.argmin(epoch_train_scores),
+        np.min(epoch_test_losses), np.min(epoch_test_scores), np.argmin(epoch_test_scores),
+        config
+    )
+
+    with open(path.replace(".png", ".txt"), 'w') as file:
+        file.write(report)
+    
+    

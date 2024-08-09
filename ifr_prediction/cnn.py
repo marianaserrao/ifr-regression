@@ -61,11 +61,11 @@ def validation(model, device, optimizer, test_loader, epoch, config):
             output = model(X)
 
             # compute loss
-            loss = F.mse_loss(output, y)
-            test_loss += loss.item()    # sum up batch loss
-            y_pred = output
+            loss = F.mse_loss(output, y, reduction='sum')
+            test_loss += loss.item()     # sum up batch loss
 
             # collect all y and y_pred in all batches
+            y_pred = output
             all_y.extend(y)
             all_y_pred.extend(y_pred)
 

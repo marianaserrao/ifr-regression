@@ -14,12 +14,13 @@ training:
   log_interval: 10 #num of batches
 
   frame:
-    window: 25
+    window: 50
     step: 2
     n_mask: 1
 
   crnn:
-    lr: 0.0001
+    lr: 0.00005
+    weight_decay: 0
     cnn:
       in_dim: 214
       img_x: 256
@@ -27,7 +28,7 @@ training:
       fc1_dim:  1024
       fc2_dim: 768
       out_dim: 512  #latent dim extracted by 2D CNN
-      dropout_p: 0.0
+      dropout_p: 0.2
     rnn:
       #LSTM
       hidden_size: 512  #nodes
@@ -38,6 +39,7 @@ training:
 
   cnn3d:
     lr: 0.0001
+    weight_decay: 0
     img_x: 256
     img_y: 342
     dropout_p: 0.0
@@ -46,6 +48,7 @@ training:
 
   cnn2d:
     lr: 0.0001
+    weight_decay: 0
     img_x: 256
     img_y: 342
     dropout_p: 0.0

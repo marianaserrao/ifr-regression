@@ -86,7 +86,7 @@ def main():
         rnn_decoder = nn.DataParallel(rnn_decoder)
 
     crnn_params = list(cnn_encoder.parameters()) + list(rnn_decoder.parameters())
-    optimizer = torch.optim.Adam(crnn_params, lr=config.crnn.lr)
+    optimizer = torch.optim.Adam(crnn_params, lr=config.crnn.lr, weight_decay=config.crnn.weight_decay)
 
     # record training process
     epoch_train_losses = []

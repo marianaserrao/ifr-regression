@@ -67,13 +67,13 @@ def test(model, device, optimizer, test_loader, epoch, config):
 
             # compute loss
             loss = F.mse_loss(output, y, reduction='sum')
-            test_loss += loss.item()    # sum up batch loss
+            test_loss += loss.item()   # sum up batch loss
             y_pred = output
 
             # collect all y and y_pred in all batches
             all_y.extend(y)
             all_y_pred.extend(y_pred)
-
+            
     # compute average test loss
     test_loss /= len(test_loader.dataset)
 
