@@ -109,7 +109,7 @@ class CustomCNNEncoder(nn.Module):
 
 class ResNetCNNEncoder(nn.Module):
     def __init__(self, fc1_dim=512, fc2_dim=512, drop_p=0.3, out_dim=300):
-        """Load the pretrained ResNet-152 and replace top fc layer."""
+        """Load the pretrained ResNet and replace top fc layer."""
         super(ResNetCNNEncoder, self).__init__()
 
         self.fc1_dim, self.fc2_dim = fc1_dim, fc2_dim
@@ -118,6 +118,7 @@ class ResNetCNNEncoder(nn.Module):
         resnet = models.resnet152(pretrained=True)
         modules = list(resnet.children())[:-1]      # remove the last fc layer.
         self.resnet = nn.Sequential(*modules)
+
         self.fc1 = nn.Linear(resnet.fc.in_features, fc1_dim)
         self.bn1 = nn.BatchNorm1d(fc1_dim, momentum=0.01)
         self.fc2 = nn.Linear(fc1_dim, fc2_dim)
@@ -146,6 +147,187 @@ class ResNetCNNEncoder(nn.Module):
         cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0).transpose_(0, 1)
 
         return cnn_embed_seq
+    
+class DenseNetCNNEncoder(nn.Module):
+    def __init__(self, fc1_dim=512, fc2_dim=512, drop_p=0.3, out_dim=300):
+        """Load the pretrained DenseNet and replace top fc layer."""
+        super(DenseNetCNNEncoder, self).__init__()
+
+        self.fc1_dim, self.fc2_dim = fc1_dim, fc2_dim
+        self.drop_p = drop_p
+
+        densenet = models.densenet121(pretrained=True)
+        self.densenet = densenet.features  # Extract the convolutional feature extractor part
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # Use adaptive pooling to flatten input
+        num_features = densenet.classifier.in_features  # Get the number of input features for the classifier
+
+        # Define fully connected layers
+        self.fc1 = nn.Linear(num_features, fc1_dim)
+        self.bn1 = nn.BatchNorm1d(fc1_dim, momentum=0.01)
+        self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+        self.bn2 = nn.BatchNorm1d(fc2_dim, momentum=0.01)
+        self.fc3 = nn.Linear(fc2_dim, out_dim)
+        
+    def forward(self, x_3d):
+        cnn_embed_seq = []
+        for t in range(x_3d.size(1)):
+            # DenseNet CNN
+            with torch.no_grad():
+                x = self.densenet(x_3d[:, t, :, :, :])  # Forward pass through DenseNet features
+                x = self.avgpool(x)  # Apply adaptive pooling
+                x = torch.flatten(x, 1)  # Flatten the output
+
+            # FC layers
+            x = self.bn1(self.fc1(x))
+            x = F.relu(x)
+            x = self.bn2(self.fc2(x))
+            x = F.relu(x)
+            x = F.dropout(x, p=self.drop_p, training=self.training)
+            x = self.fc3(x)
+
+            cnn_embed_seq.append(x)
+
+        # swap time and sample dim such that (sample dim, time dim, CNN latent dim)
+        cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0).transpose_(0, 1)
+
+        return cnn_embed_seq
+
+class VGGCNNEncoder(nn.Module):
+    def __init__(self, fc1_dim=512, fc2_dim=512, drop_p=0.3, out_dim=300):
+        """Load the pretrained VGG and replace top fc layer."""
+        super(VGGCNNEncoder, self).__init__()
+
+        self.fc1_dim, self.fc2_dim = fc1_dim, fc2_dim
+        self.drop_p = drop_p
+
+        # Load pretrained VGG and modify it
+        vgg = models.vgg16(pretrained=True)
+        self.vgg = vgg.features  # Use the feature extractor part of VGG
+        self.avgpool = vgg.avgpool  # VGG has an avgpool layer before the classifier
+        num_features = vgg.classifier[0].in_features  # Get the number of input features for the first FC layer in VGG
+
+        # Define fully connected layers
+        self.fc1 = nn.Linear(num_features, fc1_dim)
+        self.bn1 = nn.BatchNorm1d(fc1_dim, momentum=0.01)
+        self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+        self.bn2 = nn.BatchNorm1d(fc2_dim, momentum=0.01)
+        self.fc3 = nn.Linear(fc2_dim, out_dim)
+        
+    def forward(self, x_3d):
+        cnn_embed_seq = []
+        for t in range(x_3d.size(1)):
+            # VGG CNN
+            with torch.no_grad():
+                x = self.vgg(x_3d[:, t, :, :, :])  # Forward pass through VGG features
+                x = self.avgpool(x)  # Apply VGG's avgpool
+                x = torch.flatten(x, 1)  # Flatten the output
+            
+            # FC layers
+            x = self.bn1(self.fc1(x))
+            x = F.relu(x)
+            x = self.bn2(self.fc2(x))
+            x = F.relu(x)
+            x = F.dropout(x, p=self.drop_p, training=self.training)
+            x = self.fc3(x)
+
+            cnn_embed_seq.append(x)
+
+        # Swap time and sample dimensions to get (batch_size, time_steps, feature_dim)
+        cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0).transpose_(0, 1)
+
+        return cnn_embed_seq
+
+class EfficientNetB5CNNEncoder(nn.Module):
+    def __init__(self, fc1_dim=512, fc2_dim=512, drop_p=0.3, out_dim=300):
+        """Load the pretrained EfficientNet-B5 and replace top fc layer."""
+        super(EfficientNetB5CNNEncoder, self).__init__()
+
+        self.fc1_dim, self.fc2_dim = fc1_dim, fc2_dim
+        self.drop_p = drop_p
+
+        # Load pretrained EfficientNet-B5 and modify it
+        efficientnet = models.efficientnet_b5(pretrained=True)
+        self.features = efficientnet.features  # Use the feature extractor part of EfficientNet
+        self.avgpool = efficientnet.avgpool  # EfficientNet has an avgpool layer before the classifier
+        num_features = efficientnet.classifier[1].in_features  # Get the number of input features for the first FC layer
+
+        # Define fully connected layers
+        self.fc1 = nn.Linear(num_features, fc1_dim)
+        self.bn1 = nn.BatchNorm1d(fc1_dim, momentum=0.01)
+        self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+        self.bn2 = nn.BatchNorm1d(fc2_dim, momentum=0.01)
+        self.fc3 = nn.Linear(fc2_dim, out_dim)
+        
+    def forward(self, x_3d):
+        cnn_embed_seq = []
+        for t in range(x_3d.size(1)):
+            # EfficientNet-B5 CNN
+            with torch.no_grad():
+                x = self.features(x_3d[:, t, :, :, :])  # Forward pass through EfficientNet-B5 features
+                x = self.avgpool(x)  # Apply EfficientNet's avgpool
+                x = torch.flatten(x, 1)  # Flatten the output
+            
+            # FC layers
+            x = self.bn1(self.fc1(x))
+            x = F.relu(x)
+            x = self.bn2(self.fc2(x))
+            x = F.relu(x)
+            x = F.dropout(x, p=self.drop_p, training=self.training)
+            x = self.fc3(x)
+
+            cnn_embed_seq.append(x)
+
+        # Swap time and sample dimensions to get (batch_size, time_steps, feature_dim)
+        cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0).transpose_(0, 1)
+
+        return cnn_embed_seq
+
+# class InceptionV3CNNEncoder(nn.Module):
+#     def __init__(self, fc1_dim=512, fc2_dim=512, drop_p=0.3, out_dim=300):
+#         """Load the pretrained InceptionV3 and replace top fc layer."""
+#         super(InceptionV3CNNEncoder, self).__init__()
+
+#         self.fc1_dim, self.fc2_dim = fc1_dim, fc2_dim
+#         self.drop_p = drop_p
+
+#         # Load pretrained InceptionV3 and keep everything except the final FC layer
+#         inception = models.inception_v3(pretrained=True, aux_logits=True)
+#         self.inception = inception
+#         num_features = inception.fc.in_features  # Get the number of input features for the classifier
+
+#         # Define fully connected layers
+#         self.fc1 = nn.Linear(num_features, fc1_dim)
+#         self.bn1 = nn.BatchNorm1d(fc1_dim, momentum=0.01)
+#         self.fc2 = nn.Linear(fc1_dim, fc2_dim)
+#         self.bn2 = nn.BatchNorm1d(fc2_dim, momentum=0.01)
+#         self.fc3 = nn.Linear(fc2_dim, out_dim)
+        
+#     def forward(self, x_3d):
+#         cnn_embed_seq = []
+#         for t in range(x_3d.size(1)):
+#             # InceptionV3 CNN
+#             with torch.no_grad():
+#                 print(x_3d[:, t, :, :, :].shape)
+#                 # Forward pass through the InceptionV3 layers
+#                 x = self.inception(x_3d[:, t, :, :, :])
+#                 if self.inception.aux_logits:
+#                     x = x.logits  # If aux_logits is True, extract the main logits
+#                 x = torch.flatten(x, 1)  # Flatten the output
+            
+#             # FC layers
+#             x = self.bn1(self.fc1(x))
+#             x = F.relu(x)
+#             x = self.bn2(self.fc2(x))
+#             x = F.relu(x)
+#             x = F.dropout(x, p=self.drop_p, training=self.training)
+#             x = self.fc3(x)
+
+#             cnn_embed_seq.append(x)
+
+#         # Swap time and sample dimensions to get (batch_size, time_steps, feature_dim)
+#         cnn_embed_seq = torch.stack(cnn_embed_seq, dim=0).transpose_(0, 1)
+
+#         return cnn_embed_seq
 
 class RNNDecoder(nn.Module):
     def __init__(self, in_dim=300, hidden_layers=3, hidden_size=256, fc1_dim=128, drop_p=0.3, num_classes=1):

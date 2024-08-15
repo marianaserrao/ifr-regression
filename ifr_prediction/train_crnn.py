@@ -51,9 +51,18 @@ def main():
     train_loader = data.DataLoader(train_set, **params)
     test_loader = data.DataLoader(test_set, **params)
 
+    # # create model
+    # cnn_config = config.crnn.cnn
+    # cnn_encoder = ResNetCNNEncoder(
+    #     fc1_dim=cnn_config.fc1_dim, 
+    #     fc2_dim=cnn_config.fc2_dim, 
+    #     drop_p=cnn_config.dropout_p, 
+    #     out_dim=cnn_config.out_dim,
+    # ).to(device)
+
     # create model
     cnn_config = config.crnn.cnn
-    cnn_encoder = ResNetCNNEncoder(
+    cnn_encoder = EfficientNetB5CNNEncoder(
         fc1_dim=cnn_config.fc1_dim, 
         fc2_dim=cnn_config.fc2_dim, 
         drop_p=cnn_config.dropout_p, 
@@ -112,7 +121,8 @@ def main():
             np.save(os.path.join(config.performance_dir,'crnn_epoch_test_loss.npy'), np.array(epoch_test_losses))
             np.save(os.path.join(config.performance_dir,'crnn_epoch_test_score.npy'), np.array(epoch_test_scores))
     
-    plot_performance("ResNetRCNN", config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores)
+    # plot_performance("ResNetRCNN", config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores)
+    plot_performance("EfficientNetB5RCNN", config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores)
 
 if __name__ =="__main__":
     main()
