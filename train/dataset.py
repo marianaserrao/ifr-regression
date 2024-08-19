@@ -4,6 +4,8 @@ from PIL import Image
 from torch.utils import data
 import torch
 
+from vessel_segmentation import VesselSegmentation
+
 def get_context_frame_ids(exam, config):
     kf_id = exam["key_frame"]["id"]
     frame_ids = np.arange(max(1, kf_id-config.frame.window+1), kf_id+1, config.frame.step)
@@ -36,6 +38,7 @@ class Dataset_CRNN(data.Dataset):
         self.exams = exams
         self.config = config
         self.transform = transform
+        self.vs = VesselSegmentation()
 
     def __len__(self):
         "Denotes the total number of samples"
@@ -48,7 +51,10 @@ class Dataset_CRNN(data.Dataset):
         
         for i in kf_ids:            
             image = Image.open(get_frame_path_by_id(key_frame_path, i))
-            # image = Image.merge("RGB", (image, image, image))
+
+            # raw_image = self.vs.read_image(get_frame_path_by_id(key_frame_path, i))
+            # mask = self.vs.predict_mask(raw_image)
+            # image = Image.merge("RGB", (mask, mask, mask))
 
             if self.transform is not None:
                 image = self.transform(image)

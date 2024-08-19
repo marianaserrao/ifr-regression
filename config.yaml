@@ -1,6 +1,9 @@
 
+exams_dir: "/media/jlsstorage/masstorage/angiograms/Videos" 
+
 training:
   save_checkpoints: False
+  metric: "accuracy" #accuracy or MSE
 
   data_json: "/home/guests/mas/angiograms/clinical_data.json"
   checkpoints_dir: "/home/guests/mas/angiograms/ifr_prediction/checkpoint"
@@ -19,20 +22,27 @@ training:
     n_mask: 1
 
   crnn:
-    lr: 0.00005
+    lr: 0.00001
     weight_decay: 0
     cnn:
-      # in_dim: 224 #default
-      in_dim: 456 #for efficientnet
+      in_dim: 224 #default
+      # in_dim: 456 #for efficientnet
       # in_dim: 299 #for inceptionv3
       img_x: 256
       img_y: 342
+      # fc1_dim:  448
+      # fc2_dim: 336
+      # out_dim: 224  #latent dim extracted by 2D CNN
       fc1_dim:  1024
       fc2_dim: 768
       out_dim: 512  #latent dim extracted by 2D CNN
       dropout_p: 0.0
     rnn:
       #LSTM
+      # hidden_size: 512  #nodes
+      # hidden_layers: 3
+      # #Linear
+      # fc1_dim: 224
       hidden_size: 512  #nodes
       hidden_layers: 3
       #Linear

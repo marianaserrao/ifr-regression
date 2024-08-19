@@ -32,16 +32,19 @@ def plot_performance(model_name, config, epoch_train_losses, epoch_test_losses, 
     plt.plot(np.arange(1, config.epochs + 1), epoch_test_scores)         #  test accuracy (on epoch end)
     plt.title("training scores")
     plt.xlabel('epochs')
-    plt.ylabel('MSE')
+    plt.ylabel(config.metric)
     plt.legend(['train', 'test'], loc="upper left")
 
     path = os.path.join(config.charts_dir, f"{model_name}_{int(time.time())}.png")
     plt.savefig(path, dpi=600)
     plt.close(fig)
 
-    report = 'Best scores: \n Train set -> Loss: {:.4f}, MSE: {:.4f}, Epoch: {} \n  Test set -> Loss: {:.4f}, MSE: {:.4f}, Epoch: {} \n Config: \n{}'.format(
-        np.min(epoch_train_losses), np.min(epoch_train_scores), np.argmin(epoch_train_scores),
-        np.min(epoch_test_losses), np.min(epoch_test_scores), np.argmin(epoch_test_scores),
+    get_best_score = np.min if config.metric == "MSE" else np.max
+    get_best_epoch = np.argmin if config.metric == "MSE" else np.argmax
+
+    report = 'Best scores: \n Train set -> Loss: {:.4f}, {}: {:.4f}, Epoch: {} \n  Test set -> Loss: {:.4f}, {}: {:.4f}, Epoch: {} \n Config: \n{}'.format(
+        np.min(epoch_train_losses), config.metric, get_best_score(epoch_train_scores), get_best_epoch(epoch_train_scores),
+        np.min(epoch_test_losses), config.metric, get_best_score(epoch_test_scores), get_best_epoch(epoch_test_scores),
         config
     )
 

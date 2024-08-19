@@ -1,8 +1,8 @@
-from utils import *
-from models import *
-from dataset import *
-from transforms import *
-from cnn import train, validation
+from .utils import *
+from .models import *
+from .dataset import *
+from .transforms import *
+from .cnn import train, validation
 
 import os
 import numpy as np
