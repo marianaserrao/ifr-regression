@@ -19,14 +19,14 @@ class VesselSegmentation:
         self.model = self._load_model("/home/guests/mas/angiograms/enhancedModel.pth")
 
     def _load_model(self, path):
-        logging.info("Loading model {}".format(path))
+        print("Loading model {}".format(path))
         net = smp.EfficientUnetPlusPlus(encoder_name="timm-efficientnet-b5", encoder_weights="imagenet", in_channels=3, classes=3)
         net = nn.DataParallel(net)
         net.to(device=self.device)
         # faster convolutions, but more memory
         cudnn.benchmark = True
         net.load_state_dict(torch.load(path, map_location=self.device))
-        logging.info("Model loaded !")
+        print("Model loaded !")
 
         return net
 

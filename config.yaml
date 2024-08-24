@@ -1,14 +1,18 @@
 
-exams_dir: "/media/jlsstorage/masstorage/angiograms/Videos" 
+exams_dir: "/media/masstorage/angiograms/exams" 
+clinical_data_excel_path: "/media/masstorage/angiograms/clinical_data.xlsx"
+patient_json_path: "/home/guests/mas/angiograms/patient_data.json"
+exam_json_path: "/home/guests/mas/angiograms/exam_data.json"
+kf_mask_dir: "/media/masstorage/angiograms/key_masks"
 
 training:
   save_checkpoints: False
   metric: "accuracy" #accuracy or MSE
 
   data_json: "/home/guests/mas/angiograms/clinical_data.json"
-  checkpoints_dir: "/home/guests/mas/angiograms/ifr_prediction/checkpoint"
-  performance_dir: "/home/guests/mas/angiograms/ifr_prediction/performance"
-  charts_dir: "/home/guests/mas/angiograms/ifr_prediction/charts"
+  checkpoints_dir: "/home/guests/mas/angiograms/train/checkpoint"
+  performance_dir: "/home/guests/mas/angiograms/train/performance"
+  charts_dir: "/home/guests/mas/angiograms/train/charts"
 
   epochs: 30
   batch_size: 10

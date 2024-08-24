@@ -1,6 +1,8 @@
 test*
 other
 venv
+zvenv
+dvenv
 charts
 
 *.log
@@ -11,7 +13,7 @@ charts
 *.pth
 *.npy
 
-vessel_sementation
+EfficientUNetPlusPlus*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

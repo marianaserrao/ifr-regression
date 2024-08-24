@@ -38,7 +38,7 @@ class Dataset_CRNN(data.Dataset):
         self.exams = exams
         self.config = config
         self.transform = transform
-        self.vs = VesselSegmentation()
+        # self.vs = VesselSegmentation()
 
     def __len__(self):
         "Denotes the total number of samples"
@@ -54,7 +54,8 @@ class Dataset_CRNN(data.Dataset):
 
             # raw_image = self.vs.read_image(get_frame_path_by_id(key_frame_path, i))
             # mask = self.vs.predict_mask(raw_image)
-            # image = Image.merge("RGB", (mask, mask, mask))
+            # image = np.stack([mask] * 3, axis=-1)
+            # image = Image.fromarray(image.astype('uint8'), 'RGB')
 
             if self.transform is not None:
                 image = self.transform(image)

@@ -1,0 +1,32 @@
+[
+    {
+        "id": "24",
+        "patient_id": "250",
+        "path": "/media/masstorage/angiograms/exams/250/24",
+        "key_frame": {
+            "id": "26",
+            "path": "/media/masstorage/angiograms/exams/250/24/250_-24.4_-21.4_26_IM-2381-0028.png",
+            "mask": "/media/masstorage/angiograms/key_masks/250_-24.4_-21.4_26_IM-2381-0028.png"
+        }
+    },
+    {
+        "id": "40",
+        "patient_id": "250",
+        "path": "/media/masstorage/angiograms/exams/250/40",
+        "key_frame": {
+            "id": "40",
+            "path": "/media/masstorage/angiograms/exams/250/40/250_59_-28.6_40_IM-2397-0064.png",
+            "mask": "/media/masstorage/angiograms/key_masks/250_59_-28.6_40_IM-2397-0064.png"
+        }
+    },
+    {
+        "id": "37",
+        "patient_id": "250",
+        "path": "/media/masstorage/angiograms/exams/250/37",
+        "key_frame": {
+            "id": "14",
+            "path": "/media/masstorage/angiograms/exams/250/37/250_-25.7_-19.3_14_IM-2394-0046.png",
+            "mask": "/media/masstorage/angiograms/key_masks/250_-25.7_-19.3_14_IM-2394-0046.png"
+        }
+    }
+]

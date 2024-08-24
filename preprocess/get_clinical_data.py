@@ -5,34 +5,35 @@ from pathlib import Path
 from tqdm import tqdm
 import re
 
+def get_patient_data(patients_excel_path):
+    df = pd.read_excel(patients_excel_path)
+    df = df[['Nr', 'Sexo', 'Idade', 'iFR_valor', 'FFR_valor', 'Excluir (0_nao_1_sim_2_talvez',]]
+    df = df.rename(columns={
+        'Nr': "id", 
+        'Sexo': "sex", 
+        'Idade': "age", 
+        'iFR_valor': "ifr", 
+        'FFR_valor': "ffr", 
+        'Excluir (0_nao_1_sim_2_talvez': "exclude"
+    })
+    df[['exclude']] = df[['exclude']].fillna(value=0)
+    df = df[df['id'].notna()]
+    df['id'] = df['id'].astype(int)
+    # TODO: manter o que não tiver flag excluir ou o que tiver mais valores ffr ifr
+    df = df.drop_duplicates(subset='id', keep='last')
+    df.set_index('id', drop=False, inplace=True)
+
+    patients_json = df.to_json(orient='index')
+    patients_data = json.loads(patients_json)
+
+    return patients_data
+
 def main():
     patients_excel_path = './clinical_data.xlsx'
     exam_videos_path = '/media/jlsstorage/masstorage/angiograms/Videos'
     exam_masks_path = '/media/jlsstorage/masstorage/angiograms/key_masks'
     output_json = './clinical_data.json'
 
-    def get_patient_data(patients_excel_path):
-        df = pd.read_excel(patients_excel_path)
-        df = df[['Nr', 'Sexo', 'Idade', 'iFR_valor', 'FFR_valor', 'Excluir (0_nao_1_sim_2_talvez',]]
-        df = df.rename(columns={
-            'Nr': "id", 
-            'Sexo': "sex", 
-            'Idade': "age", 
-            'iFR_valor': "ifr", 
-            'FFR_valor': "ffr", 
-            'Excluir (0_nao_1_sim_2_talvez': "exclude"
-        })
-        df[['exclude']] = df[['exclude']].fillna(value=0)
-        df = df[df['id'].notna()]
-        df['id'] = df['id'].astype(int)
-        # TODO: manter o que não tiver flag excluir ou o que tiver mais valores ffr ifr
-        df = df.drop_duplicates(subset='id', keep='last')
-        df.set_index('id', drop=False, inplace=True)
-
-        patients_json = df.to_json(orient='index')
-        patients_data = json.loads(patients_json)
-
-        return patients_data
 
 
     def get_kf_exams_data(exam_videos_path, exam_masks_path, patients_data):
