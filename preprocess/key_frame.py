@@ -167,6 +167,8 @@ def get_exam_keyframe(exam_path, kf_mask_dir, vessel_segmentation, min_mask_size
     masks = []
     frames = list_files_in_folder(exam_path)
     frames = sorted(frames, key=natural_sort_key)
+    if len(frames)<10:
+        return None
     for i,frame in enumerate(frames):
         frame_path = os.path.join(exam_path, frame)
         image = vessel_segmentation.read_image(frame_path)

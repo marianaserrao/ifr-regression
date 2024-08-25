@@ -5,6 +5,9 @@ patient_json_path: "/home/guests/mas/angiograms/patient_data.json"
 exam_json_path: "/home/guests/mas/angiograms/exam_data.json"
 kf_mask_dir: "/media/masstorage/angiograms/key_masks"
 
+preprocess:
+  exams_log: "/home/guests/mas/angiograms/preprocess/preprocessed_exams.log"
+
 training:
   save_checkpoints: False
   metric: "accuracy" #accuracy or MSE
