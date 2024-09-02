@@ -7,7 +7,7 @@ import torch
 from vessel_segmentation import VesselSegmentation
 
 def get_context_frame_ids(exam, config):
-    kf_id = exam["key_frame"]["id"]
+    kf_id = int(exam["key_frame"]["path"].split('_')[3])
     frame_ids = np.arange(max(1, kf_id-config.frame.window+1), kf_id+1, config.frame.step)
 
     total_frames = config.frame.window//config.frame.step

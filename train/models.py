@@ -363,6 +363,46 @@ class RNNDecoder(nn.Module):
         x = self.fc2(x)
 
         return x
+    
+class RNNClassifier(nn.Module):
+    def __init__(self, in_dim=300, hidden_layers=3, hidden_size=256, fc1_dim=128, drop_p=0.3, num_classes=1):
+        super(RNNClassifier, self).__init__()
+
+        self.RNN_input_size = in_dim
+        self.hidden_layers = hidden_layers   # RNN hidden layers
+        self.hidden_size = hidden_size                 # RNN hidden nodes
+        self.fc1_dim = fc1_dim
+        self.drop_p = drop_p
+        self.num_classes = num_classes
+
+        self.LSTM = nn.LSTM(
+            input_size=self.RNN_input_size,
+            hidden_size=self.hidden_size,        
+            num_layers=hidden_layers,       
+            batch_first=True,       # input & output will have batch size as 1s dimension. e.g. (batch, time_step, input_size)
+        )
+
+        self.fc1 = nn.Linear(self.hidden_size, self.fc1_dim)
+        self.fc2 = nn.Linear(self.fc1_dim, self.num_classes)
+
+    def forward(self, x_RNN):        
+        self.LSTM.flatten_parameters()
+        RNN_out, (h_n, h_c) = self.LSTM(x_RNN, None)  
+        """ h_n shape (n_layers, batch, hidden_size), h_c shape (n_layers, batch, hidden_size) """ 
+        """ None represents zero initial hidden state. RNN_out has shape=(batch, time_step, output_size) """
+
+        # FC layers
+        x = self.fc1(RNN_out[:, -1, :])   # choose RNN_out at the last time step
+        x = F.relu(x)
+        x = F.dropout(x, p=self.drop_p, training=self.training)
+        x = self.fc2(x)
+
+        if self.num_classes == 1:
+            x = torch.sigmoid(x)  # Use sigmoid for binary classification
+        else:
+            x = F.log_softmax(x, dim=1)  # Use log softmax for multi-class classification
+
+        return x
 
 ##### 3D CNN #######################################################
 

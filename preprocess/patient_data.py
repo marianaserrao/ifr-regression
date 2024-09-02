@@ -15,7 +15,7 @@ def get_patient_data(patients_excel_path):
     df[['exclude']] = df[['exclude']].fillna(value=0)
     df = df[df['id'].notna()]
     df['id'] = df['id'].astype(int)
-    df = df[(df['ifr']!=None) & (df["exclude"]!=1)]
+    df = df[(df['ifr'].notna()) & (df["exclude"]!=1)]
     df = df.drop_duplicates(subset='id', keep='last')
     df.set_index('id', drop=False, inplace=True)
 

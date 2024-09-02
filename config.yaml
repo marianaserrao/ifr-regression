@@ -1,20 +1,21 @@
 
-exams_dir: "/media/masstorage/angiograms/exams" 
+exams_dir: "/media/jlsstorage/masstorage/angiograms/Videos" 
 clinical_data_excel_path: "/media/masstorage/angiograms/clinical_data.xlsx"
-patient_json_path: "/home/guests/mas/angiograms/patient_data.json"
-exam_json_path: "/home/guests/mas/angiograms/exam_data.json"
+patient_json_path: "/media/masstorage/angiograms/patient_data.json"
+exam_json_path: "/media/masstorage/angiograms/exam_data.json"
 kf_mask_dir: "/media/masstorage/angiograms/key_masks"
 
 preprocess:
-  exams_log: "/home/guests/mas/angiograms/preprocess/preprocessed_exams.log"
+  exams_log: "/media/masstorage/angiograms/preprocessed_exams.log"
 
 training:
+  model_name: "VGGRCNNClassifier"
   save_checkpoints: False
   metric: "accuracy" #accuracy or MSE
 
   data_json: "/home/guests/mas/angiograms/clinical_data.json"
-  checkpoints_dir: "/home/guests/mas/angiograms/train/checkpoint"
-  performance_dir: "/home/guests/mas/angiograms/train/performance"
+  checkpoints_dir: "/media/masstorage/angiograms/checkpoints"
+  performance_dir: "/media/masstorage/angiograms/performance"
   charts_dir: "/home/guests/mas/angiograms/train/charts"
 
   epochs: 30
