@@ -9,20 +9,24 @@ preprocess:
   exams_log: "/media/masstorage/angiograms/preprocessed_exams.log"
 
 training:
-  model_name: "VGGRCNNClassifier"
+  model_name: "CRNN_VGG"
   save_checkpoints: False
   metric: "accuracy" #accuracy or MSE
+
+  pos_weight: 0.15
 
   data_json: "/home/guests/mas/angiograms/clinical_data.json"
   checkpoints_dir: "/media/masstorage/angiograms/checkpoints"
   performance_dir: "/media/masstorage/angiograms/performance"
-  charts_dir: "/home/guests/mas/angiograms/train/charts"
+  charts_dir: "/home/guests/mas/angiograms/report_charts"
 
   epochs: 30
   batch_size: 10
   test_size: 0.2
   num_workers: 4
-  log_interval: 10 #num of batches
+  log_interval: 10
+
+  augmentation_samples: 2
 
   frame:
     window: 50
@@ -30,14 +34,14 @@ training:
     n_mask: 1
 
   crnn:
-    lr: 0.00001
+    lr: 0.0001
     weight_decay: 0
     cnn:
       in_dim: 224 #default
       # in_dim: 456 #for efficientnet
       # in_dim: 299 #for inceptionv3
-      img_x: 256
-      img_y: 342
+      img_x: 224
+      img_y: 224
       # fc1_dim:  448
       # fc2_dim: 336
       # out_dim: 224  #latent dim extracted by 2D CNN
@@ -60,8 +64,10 @@ training:
   cnn3d:
     lr: 0.0001
     weight_decay: 0
-    img_x: 256
-    img_y: 342
+    # img_x: 256
+    # img_y: 342
+    img_x: 224
+    img_y: 224
     dropout_p: 0.0
     fc1_dim:  256
     fc2_dim: 256
@@ -69,8 +75,10 @@ training:
   cnn2d:
     lr: 0.0001
     weight_decay: 0
-    img_x: 256
-    img_y: 342
+    # img_x: 256
+    # img_y: 342
+    img_x: 224
+    img_y: 224
     dropout_p: 0.0
     fc1_dim:  256
     fc2_dim: 256

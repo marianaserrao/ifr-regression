@@ -52,7 +52,7 @@ def main():
     valid_loader = data.DataLoader(valid_set, **params)
 
     cnn3d = CNN3D(
-        t_dim=config.frame.window+config.frame.n_mask, 
+        t_dim=config.frame.window//config.frame_step+config.frame.n_mask, 
         img_x=config.cnn3d.img_x,
         img_y=config.cnn3d.img_y,
         drop_p=config.cnn3d.dropout_p, 
@@ -65,7 +65,7 @@ def main():
         print("Using", torch.cuda.device_count(), "GPUs!")
         cnn3d = nn.DataParallel(cnn3d)
 
-    optimizer = torch.optim.Adam(cnn3d.parameters(), lr=config.cnn3d.lr, weight_decay=config.cnn3d.wight_decay)
+    optimizer = torch.optim.Adam(cnn3d.parameters(), lr=config.cnn3d.lr, weight_decay=config.cnn3d.weight_decay)
 
     # record training process
     epoch_train_losses = []
@@ -76,7 +76,7 @@ def main():
     # start training
     for epoch in range(config.epochs):
         # train, test model
-        train_losses, train_scores = train(config.log_interval, cnn3d, device, train_loader, optimizer, epoch)
+        train_losses, train_scores = train(config.log_interval, cnn3d, device, train_loader, optimizer, epoch, config)
         epoch_test_loss, epoch_test_score = validation(cnn3d, device, optimizer, valid_loader, epoch, config)
 
         epoch_train_losses.append(train_losses)

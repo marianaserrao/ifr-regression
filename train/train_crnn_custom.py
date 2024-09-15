@@ -97,7 +97,7 @@ def main():
     # start training
     for epoch in range(config.epochs):
         # train, test model
-        train_losses, train_scores = train(config.log_interval, [cnn_encoder, rnn_decoder], device, train_loader, optimizer, epoch)
+        train_losses, train_scores = train(config.log_interval, [cnn_encoder, rnn_decoder], device, train_loader, optimizer, epoch, config)
         epoch_test_loss, epoch_test_score = test([cnn_encoder, rnn_decoder], device, optimizer, test_loader, epoch, config)
 
         epoch_train_losses.append(train_losses)

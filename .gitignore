@@ -3,7 +3,7 @@ other
 venv
 zvenv
 dvenv
-charts
+*charts/
 
 *.log
 *.xlsx

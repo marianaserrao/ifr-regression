@@ -75,7 +75,7 @@ def main():
     # start training
     for epoch in range(config.epochs):
         # train, test model
-        train_losses, train_scores = train(config.log_interval, cnn2d, device, train_loader, optimizer, epoch)
+        train_losses, train_scores = train(config.log_interval, cnn2d, device, train_loader, optimizer, epoch, config)
         epoch_test_loss, epoch_test_score = validation(cnn2d, device, optimizer, valid_loader, epoch, config)
 
         epoch_train_losses.append(train_losses)

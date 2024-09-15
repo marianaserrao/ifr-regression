@@ -53,7 +53,7 @@ def main():
 
     # # create model
     # cnn_config = config.crnn.cnn
-    # cnn_encoder = ResNetCNNEncoder(
+    # cnn_encoder = EfficientNetB5CNNEncoder(
     #     fc1_dim=cnn_config.fc1_dim, 
     #     fc2_dim=cnn_config.fc2_dim, 
     #     drop_p=cnn_config.dropout_p, 

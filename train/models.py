@@ -115,7 +115,8 @@ class ResNetCNNEncoder(nn.Module):
         self.fc1_dim, self.fc2_dim = fc1_dim, fc2_dim
         self.drop_p = drop_p
 
-        resnet = models.resnet152(pretrained=True)
+        resnet = models.resnet18(pretrained=True)
+        # resnet = models.resnet152(pretrained=True)
         modules = list(resnet.children())[:-1]      # remove the last fc layer.
         self.resnet = nn.Sequential(*modules)
 

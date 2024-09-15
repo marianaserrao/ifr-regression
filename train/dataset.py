@@ -32,7 +32,7 @@ def get_frame_path_by_id(key_frame_path, id):
 
 class Dataset_CRNN(data.Dataset):
     "Characterizes a dataset for PyTorch"
-    def __init__(self, exams, labels, config, transform=None):
+    def __init__(self, exams, labels, config, transform=None, augment_samples=False):
         "Initialization"
         self.labels = labels
         self.exams = exams
@@ -69,6 +69,10 @@ class Dataset_CRNN(data.Dataset):
         X.extend([kf_mask] * self.config.frame.n_mask)
 
         X = torch.stack(X, dim=0)
+
+        age_factor = exam["patient"]["age"] or 100
+        X=X*age_factor/100
+        
         return X
 
     def __getitem__(self, index):

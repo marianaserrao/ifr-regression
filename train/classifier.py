@@ -14,6 +14,10 @@ def train(log_interval, model, device, train_loader, optimizer, epoch, config):
     scores = []
     sample_counter = 0   # total trained sample in one epoch
 
+    # Calculate positive class weight based on class imbalance
+    pos_weight = torch.tensor([config.pos_weight]).to(device)  # Add the class imbalance weight
+    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+
     for batch_idx, (X, y) in enumerate(train_loader):
         # distribute data to device
         X, y = X.to(device), y.to(device).view(-1, 1)
@@ -24,7 +28,8 @@ def train(log_interval, model, device, train_loader, optimizer, epoch, config):
         output = rnn_decoder(cnn_encoder(X))   # shape = (batch, 1)
 
         # compute loss
-        loss = F.binary_cross_entropy(output, y)
+        # loss = F.binary_cross_entropy(output, y)
+        loss = criterion(output, y)
         losses.append(loss.item())
 
         y_pred = output > 0.5
@@ -64,6 +69,10 @@ def test(model, device, optimizer, test_loader, epoch, config):
     all_y = []
     all_y_pred = []
 
+    # Calculate positive class weight based on class imbalance
+    pos_weight = torch.tensor([config.pos_weight]).to(device)  # Add the class imbalance weight
+    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+
     with torch.no_grad():
         for X, y in test_loader:
             # distribute data to device
@@ -72,7 +81,8 @@ def test(model, device, optimizer, test_loader, epoch, config):
             output = rnn_decoder(cnn_encoder(X))
 
             # compute loss
-            loss = F.binary_cross_entropy(output, y, reduction='sum')
+            loss = criterion(output, y)
+            # loss = F.binary_cross_entropy(output, y, reduction='sum')
             test_loss += loss.item()   # sum up batch loss
 
             y_pred = output>0.5
@@ -82,7 +92,7 @@ def test(model, device, optimizer, test_loader, epoch, config):
             all_y_pred.extend(y_pred)
             
     # compute average test loss
-    test_loss /= len(test_loader.dataset)
+    # test_loss /= len(test_loader.dataset)
 
     # Convert lists to numpy arrays for metric calculations
     all_y = torch.stack(all_y, dim=0).cpu().data.squeeze().numpy()
