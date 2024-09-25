@@ -9,7 +9,7 @@ preprocess:
   exams_log: "/media/masstorage/angiograms/preprocessed_exams.log"
 
 training:
-  model_name: "ResNet18"
+  model_name: "ResNet18_no_age"
   save_checkpoints: False
   metric: "accuracy" #accuracy or MSE
 
@@ -26,7 +26,7 @@ training:
   num_workers: 4
   log_interval: 10
 
-  augmentation_samples: 2
+  augmentation_samples: 3
 
   frame:
     window: 50

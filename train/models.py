@@ -202,6 +202,18 @@ class ResNetCNNEncoder(nn.Module):
         modules = list(resnet.children())[:-1]      # remove the last fc layer.
         self.resnet = nn.Sequential(*modules)
 
+        # # Unfreeze all layers
+        # for param in self.resnet.parameters():
+        #     param.requires_grad = True
+
+        # # Freeze all layers first
+        # for param in self.resnet.parameters():
+        #     param.requires_grad = False
+
+        # # Unfreeze the last 10 layers
+        # for param in list(self.resnet.parameters())[-10:]:
+        #     param.requires_grad = True
+
         self.fc1 = nn.Linear(resnet.fc.in_features, fc1_dim)
         self.bn1 = nn.BatchNorm1d(fc1_dim, momentum=0.01)
         self.fc2 = nn.Linear(fc1_dim, fc2_dim)

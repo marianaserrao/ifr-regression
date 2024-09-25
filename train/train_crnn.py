@@ -1,5 +1,6 @@
 from .utils import *
 from .models import *
+# from .aug_dataset import *
 from .dataset import *
 from .transforms import *
 from .crnn import train, test
@@ -57,6 +58,9 @@ def main():
     train_set = Dataset_CRNN(X_train, y_train, config, transform=aug_transform)
     test_set = Dataset_CRNN(X_test, y_test, config, transform=transform)
 
+    # train_set = Dataset_CRNN(X_train, y_train, config, num_augmentations=config.augmentation_samples)
+    # test_set = Dataset_CRNN(X_test, y_test, config)
+
     train_loader = data.DataLoader(train_set, **params)
     test_loader = data.DataLoader(test_set, **params)
 
@@ -105,6 +109,14 @@ def main():
                     list(cnn_encoder.fc3.parameters()) + list(rnn_decoder.parameters())
 
     optimizer = torch.optim.Adam(crnn_params, lr=config.crnn.lr, weight_decay=config.crnn.weight_decay)
+
+    # optimizer = torch.optim.Adam([
+    #     {'params': filter(lambda p: p.requires_grad, cnn_encoder.resnet.parameters()), 'lr': 1e-5},  # Fine-tuned ResNet layers
+    #     {'params': cnn_encoder.fc1.parameters(), 'lr': 1e-4},  # Custom FC1 + BatchNorm1d layers
+    #     {'params': cnn_encoder.fc2.parameters(), 'lr': 1e-4},  # Custom FC2 + BatchNorm1d layers
+    #     {'params': cnn_encoder.fc3.parameters(), 'lr': 1e-4},  # FC3 layer
+    #     {'params': rnn_decoder.parameters(), 'lr': 1e-4}       # RNN decoder
+    # ])
 
     # record training process
     epoch_train_losses = []
