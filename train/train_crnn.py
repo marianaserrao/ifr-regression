@@ -37,10 +37,19 @@ def main():
     clinical_data = clinical_data['kf_exams']
     clinical_data = [exam for exam in clinical_data if (exam['patient']['ifr']!=None and exam['patient']["exclude"]!=1)]
 
-    X=clinical_data.copy()
-    y=[exam['patient']['ifr'] for exam in clinical_data]
+    # # correct split
+    patient_ids = list(set([exam["patient"]["id"] for exam in clinical_data]))
+    train_patient_ids, test_patient_ids = train_test_split(patient_ids, test_size=config.test_size, random_state=SEED)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config.test_size, random_state=SEED)
+    X_train = [exam for exam in clinical_data if exam["patient"]["id"] in train_patient_ids]
+    y_train = [exam["patient"]["ifr"] for exam in X_train]
+    X_test = [exam for exam in clinical_data if exam["patient"]["id"] in test_patient_ids]
+    y_test = [exam["patient"]["ifr"] for exam  in X_test]
+
+    # # leak split
+    # X=clinical_data.copy()
+    # y=[exam['patient']['ifr'] for exam in clinical_data]
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config.test_size, random_state=SEED)
 
     transform = get_crnn_transform(config.crnn.cnn.in_dim,config.crnn.cnn.in_dim)
     aug_transform = get_crnn_augmentation_tranform(config.crnn.cnn.in_dim,config.crnn.cnn.in_dim)
@@ -62,7 +71,7 @@ def main():
 
     # create model
     cnn_config = config.crnn.cnn
-    cnn_encoder = VGGCNNEncoder(
+    cnn_encoder = ResNetCNNEncoder(
         fc1_dim=cnn_config.fc1_dim, 
         fc2_dim=cnn_config.fc2_dim, 
         drop_p=cnn_config.dropout_p, 
@@ -122,7 +131,7 @@ def main():
             np.save(os.path.join(config.performance_dir,'crnn_epoch_test_score.npy'), np.array(epoch_test_scores))
     
     # plot_performance("ResNetRCNN", config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores)
-    plot_performance("VGGRCNN", config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores)
+    plot_performance(config.model_name, config, epoch_train_losses, epoch_test_losses, epoch_train_scores, epoch_test_scores)
 
 if __name__ =="__main__":
     main()

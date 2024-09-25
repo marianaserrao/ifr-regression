@@ -29,12 +29,28 @@ def train(log_interval, model, device, train_loader, optimizer, epoch, config):
 
         # compute mse on cpu
         y_pred = output
+
+        # Check for NaN values in predictions or ground truth
+        if torch.isnan(y_pred).any() or torch.isnan(y).any():
+            print("NaN detected in predictions or labels")
+            print(f"y_pred: {y_pred}")
+            print(f"y: {y}")
+            raise ValueError("NaN detected in predictions or labels")
+        for param in cnn_encoder.parameters():
+            if torch.isnan(param).any():
+                print(f"NaN detected in encoder parameters")
+        for param in rnn_decoder.parameters():
+            if torch.isnan(param).any():
+                print(f"NaN detected in decoder parameters")
+        if torch.isnan(X).any():
+            print("NaN detected in input data")
+
         mse = mean_squared_error(y.cpu().data.squeeze().numpy(), y_pred.cpu().data.squeeze().numpy())
 
         # compute binary class performance
         thr = 0.89
-        bin_y = np.where(y.cpu().data.squeeze().numpy() > thr, 1, 0)
-        bin_y_pred = np.where(y_pred.cpu().data.squeeze().numpy() > thr, 1, 0)
+        bin_y = np.where(y.cpu().data.squeeze().numpy() < thr, 1, 0)
+        bin_y_pred = np.where(y_pred.cpu().data.squeeze().numpy() < thr, 1, 0)
         # Compute accuracy
         accuracy = accuracy_score(bin_y, bin_y_pred)    
 
@@ -96,8 +112,8 @@ def test(model, device, optimizer, test_loader, epoch, config):
 
     # compute binary class performance
     thr = 0.89
-    bin_y = np.where(all_y.cpu().data.squeeze().numpy() > thr, 1, 0)
-    bin_y_pred = np.where(all_y_pred.cpu().data.squeeze().numpy() > thr, 1, 0)
+    bin_y = np.where(all_y.cpu().data.squeeze().numpy() < thr, 1, 0)
+    bin_y_pred = np.where(all_y_pred.cpu().data.squeeze().numpy() < thr, 1, 0)
     # Compute accuracy
     accuracy = accuracy_score(bin_y, bin_y_pred)
     # Compute confusion matrix

@@ -9,11 +9,11 @@ preprocess:
   exams_log: "/media/masstorage/angiograms/preprocessed_exams.log"
 
 training:
-  model_name: "CRNN_VGG"
+  model_name: "ResNet18"
   save_checkpoints: False
   metric: "accuracy" #accuracy or MSE
 
-  pos_weight: 0.15
+  pos_weight: 3.0
 
   data_json: "/home/guests/mas/angiograms/clinical_data.json"
   checkpoints_dir: "/media/masstorage/angiograms/checkpoints"
@@ -42,24 +42,25 @@ training:
       # in_dim: 299 #for inceptionv3
       img_x: 224
       img_y: 224
-      # fc1_dim:  448
-      # fc2_dim: 336
-      # out_dim: 224  #latent dim extracted by 2D CNN
+      # fc1_dim: 512
+      # fc2_dim: 384
+      # out_dim: 300  #latent dim extracted by 2D CNN
       fc1_dim:  1024
       fc2_dim: 768
       out_dim: 512  #latent dim extracted by 2D CNN
-      dropout_p: 0.0
+      dropout_p: 0
     rnn:
-      #LSTM
-      # hidden_size: 512  #nodes
+      # #LSTM
+      # hidden_size: 384  #nodes
       # hidden_layers: 3
       # #Linear
-      # fc1_dim: 224
+      # fc1_dim: 192
+      #LSTM
       hidden_size: 512  #nodes
       hidden_layers: 3
       #Linear
       fc1_dim: 256
-      dropout_p: 0.0
+      dropout_p: 0
 
   cnn3d:
     lr: 0.0001

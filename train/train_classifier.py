@@ -42,13 +42,13 @@ def main():
     train_patient_ids, test_patient_ids = train_test_split(patient_ids, test_size=config.test_size, random_state=SEED)
 
     X_train = [exam for exam in clinical_data if exam["patient"]["id"] in train_patient_ids]
-    y_train = [1 if exam["patient"]["ifr"]>0.89 else 0 for exam in X_train]
+    y_train = [1 if exam["patient"]["ifr"]<0.89 else 0 for exam in X_train]
     X_test = [exam for exam in clinical_data if exam["patient"]["id"] in test_patient_ids]
-    y_test = [1 if exam["patient"]["ifr"]>0.89 else 0 for exam  in X_test]
+    y_test = [1 if exam["patient"]["ifr"]<0.89 else 0 for exam  in X_test]
 
     # # leak split
     # X=clinical_data.copy()
-    # y=[1 if exam['patient']['ifr']>0.89 else 0 for exam in clinical_data]
+    # y=[1 if exam['patient']['ifr']<0.89 else 0 for exam in clinical_data]
 
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config.test_size, random_state=SEED)
 
@@ -73,14 +73,14 @@ def main():
     # train_patient_ids, test_patient_ids = train_test_split(patient_ids, test_size=config.test_size, random_state=SEED)
 
     # X_train = [exam for exam in clinical_data if exam["patient_id"] in train_patient_ids]
-    # y_train = [1 if patient_data[exam["patient_id"]]["ifr"]>0.89 else 0 for exam in X_train]
+    # y_train = [1 if patient_data[exam["patient_id"]]["ifr"]<0.89 else 0 for exam in X_train]
     # X_test = [exam for exam in clinical_data if exam["patient_id"] in test_patient_ids]
-    # y_test = [1 if patient_data[exam["patient_id"]]["ifr"]>0.89 else 0 for exam in X_test]
+    # y_test = [1 if patient_data[exam["patient_id"]]["ifr"]<0.89 else 0 for exam in X_test]
 
     # # leak split
     # patient_ids = list(patient_data.keys())
     # X = [exam for exam in clinical_data if exam["patient_id"] in patient_ids]
-    # y = [1 if patient_data[exam["patient_id"]]["ifr"]>0.89 else 0 for exam in X]
+    # y = [1 if patient_data[exam["patient_id"]]["ifr"]<0.89 else 0 for exam in X]
     # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config.test_size, random_state=SEED)
 
     # transform = get_crnn_transform(config.crnn.cnn.in_dim,config.crnn.cnn.in_dim)
@@ -103,7 +103,7 @@ def main():
 
     # create model
     cnn_config = config.crnn.cnn
-    cnn_encoder = VGGCNNEncoder(
+    cnn_encoder = ResNetCNNEncoder(
         fc1_dim=cnn_config.fc1_dim, 
         fc2_dim=cnn_config.fc2_dim, 
         drop_p=cnn_config.dropout_p, 

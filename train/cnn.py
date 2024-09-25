@@ -35,8 +35,8 @@ def train(log_interval, model, device, train_loader, optimizer, epoch, config):
 
         # compute binary class performance
         thr = 0.89
-        bin_y = np.where(y.cpu().data.squeeze().numpy() > thr, 1, 0)
-        bin_y_pred = np.where(y_pred.cpu().data.squeeze().numpy() > thr, 1, 0)
+        bin_y = np.where(y.cpu().data.squeeze().numpy() < thr, 1, 0)
+        bin_y_pred = np.where(y_pred.cpu().data.squeeze().numpy() < thr, 1, 0)
         # Compute accuracy
         accuracy = accuracy_score(bin_y, bin_y_pred)    
 
@@ -94,8 +94,8 @@ def validation(model, device, optimizer, test_loader, epoch, config):
 
     # compute binary class performance
     thr = 0.89
-    bin_y = np.where(all_y.cpu().data.squeeze().numpy() > thr, 1, 0)
-    bin_y_pred = np.where(all_y_pred.cpu().data.squeeze().numpy() > thr, 1, 0)
+    bin_y = np.where(all_y.cpu().data.squeeze().numpy() < thr, 1, 0)
+    bin_y_pred = np.where(all_y_pred.cpu().data.squeeze().numpy() < thr, 1, 0)
     # Compute accuracy
     accuracy = accuracy_score(bin_y, bin_y_pred)
     # Compute confusion matrix

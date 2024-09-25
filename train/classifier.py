@@ -93,6 +93,7 @@ def test(model, device, optimizer, test_loader, epoch, config):
             
     # compute average test loss
     # test_loss /= len(test_loader.dataset)
+    test_loss /= len(X)
 
     # Convert lists to numpy arrays for metric calculations
     all_y = torch.stack(all_y, dim=0).cpu().data.squeeze().numpy()

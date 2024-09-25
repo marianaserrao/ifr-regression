@@ -43,12 +43,21 @@ def main():
         clinical_data = json.load(file)
 
     clinical_data = clinical_data['kf_exams']
-    clinical_data = [exam for exam in clinical_data if (exam['patient']['ifr']!=None and exam['patient']["exclude"]!=2)]
+    clinical_data = [exam for exam in clinical_data if (exam['patient']['ifr']!=None and exam['patient']["exclude"]!=1)]
 
-    X=clinical_data.copy()
-    y=[exam['patient']['ifr'] for exam in clinical_data]
+    # # correct split
+    patient_ids = list(set([exam["patient"]["id"] for exam in clinical_data]))
+    train_patient_ids, test_patient_ids = train_test_split(patient_ids, test_size=config.test_size, random_state=SEED)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config.test_size, random_state=SEED)
+    X_train = [exam for exam in clinical_data if exam["patient"]["id"] in train_patient_ids]
+    y_train = [exam["patient"]["ifr"] for exam in X_train]
+    X_test = [exam for exam in clinical_data if exam["patient"]["id"] in test_patient_ids]
+    y_test = [exam["patient"]["ifr"] for exam  in X_test]
+
+    # # leak split
+    # X=clinical_data.copy()
+    # y=[exam['patient']['ifr'] for exam in clinical_data]
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=config.test_size, random_state=SEED)
 
     transform = get_crnn_transform(config.crnn.cnn.img_x,config.crnn.cnn.img_y)
     aug_transform = get_crnn_augmentation_tranform(config.crnn.cnn.img_x,config.crnn.cnn.img_y)
@@ -61,7 +70,7 @@ def main():
 
     # create model
     cnn_config = config.crnn.cnn
-    cnn_encoder = CustomCNNEncoder(
+    cnn_encoder = CustomCNNEncoder2(
         img_x=cnn_config.img_x, 
         img_y=cnn_config.img_y, 
         fc_hidden1=cnn_config.fc1_dim,
